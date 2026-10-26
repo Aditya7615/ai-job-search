@@ -9,7 +9,7 @@
 
 import { runSearch, type SearchOpts } from "./commands/search.js"
 import { runDetail, type DetailOpts } from "./commands/detail.js"
-import { workTypeFlag } from "./helpers.js"
+import { isExperienceValue, workTypeFlag } from "./helpers.js"
 
 interface Flags {
   _: string[]
@@ -50,6 +50,8 @@ SEARCH FLAGS
   --jobage <days>         Posted within N days: 1, 7, 14, 30. Default: all.
   --jobage-minutes <n>    Posted within N minutes (sub-day precision). Conflicts with --jobage.
   --remote <mode>         remote | hybrid | onsite. Filter by workplace type.
+  --experience <levels>   internship | entry | associate | mid-senior | director | executive.
+                          Comma = OR, e.g. entry,associate. Filters by LinkedIn experience level.
   --page <n>              1-indexed page (10 results/page). Default 1.
   --limit, -n <n>         Cap results emitted (client-side).
   --format <fmt>          json (default) | table | plain.
@@ -69,7 +71,7 @@ Personal use only — uses LinkedIn's public pages; keep volume low (LinkedIn To
 // still prints usage.
 const KNOWN_FLAGS: Record<string, Set<string>> = {
   search: new Set([
-    "location", "query", "jobage", "jobage-minutes", "remote", "page", "limit", "format", "help", "h",
+    "location", "query", "jobage", "jobage-minutes", "remote", "experience", "page", "limit", "format", "help", "h",
   ]),
   detail: new Set(["format", "help", "h"]),
 }
@@ -142,6 +144,17 @@ async function main(): Promise<number> {
       return 1
     }
 
+    if (flags.experience !== undefined && (typeof flags.experience !== "string" || !flags.experience.trim() || !isExperienceValue(flags.experience))) {
+      const got = typeof flags.experience === "string" ? `"${flags.experience}"` : "no value"
+      process.stderr.write(
+        JSON.stringify({
+          error: `--experience must be a comma list of internship|entry|associate|mid-senior|director|executive, got ${got}`,
+          code: "BAD_ARG",
+        }) + "\n",
+      )
+      return 1
+    }
+
     if (flags.jobage !== undefined && flags["jobage-minutes"] !== undefined) {
       process.stderr.write(
         JSON.stringify({
@@ -193,6 +206,7 @@ async function main(): Promise<number> {
       jobage: flags.jobage ? parseInt(flags.jobage as string, 10) : 9999,
       jobageMinutes: flags["jobage-minutes"] ? parseInt(flags["jobage-minutes"] as string, 10) : undefined,
       remote: typeof flags.remote === "string" ? flags.remote : undefined,
+      experience: typeof flags.experience === "string" ? flags.experience : undefined,
       page: flags.page ? Math.max(1, parseInt(flags.page as string, 10)) : 1,
       limit: flags.limit ? parseInt(flags.limit as string, 10) : undefined,
       format: fmt as SearchOpts["format"],

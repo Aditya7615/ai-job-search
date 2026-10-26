@@ -289,3 +289,38 @@ export function workTypeFlag(mode: string | undefined): string | null {
       return null
   }
 }
+
+/**
+ * Experience-level flag values used by LinkedIn's public job search:
+ * internship=1, entry=2, associate=3, mid-senior=4, director=5, executive=6.
+ * Accepts a comma-separated list, like --remote. An unknown value makes the
+ * caller reject the flag instead of silently dropping the filter.
+ */
+const EXPERIENCE_LEVELS: Record<string, string> = {
+  internship: "1",
+  intern: "1",
+  entry: "2",
+  "entry-level": "2",
+  "entry level": "2",
+  associate: "3",
+  "mid-senior": "4",
+  "mid-senior level": "4",
+  "mid senior": "4",
+  director: "5",
+  executive: "6",
+}
+
+export function isExperienceValue(levels: string): boolean {
+  return levels
+    .split(",")
+    .every((part) => EXPERIENCE_LEVELS[part.trim().toLowerCase()] !== undefined)
+}
+
+export function experienceFlag(levels: string | undefined): string | null {
+  if (!levels) return null
+  const mapped = levels
+    .split(",")
+    .map((part) => EXPERIENCE_LEVELS[part.trim().toLowerCase()])
+    .filter((value): value is string => Boolean(value))
+  return mapped.length ? [...new Set(mapped)].join(",") : null
+}

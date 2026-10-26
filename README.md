@@ -59,6 +59,34 @@ files ready    with fit ratings     (LaTeX, tailored)
 
 The framework encodes career guidance best practices, including structured evaluation criteria, forward-looking cover letter framing, and optional salary benchmarking.
 
+## JobPilot web UI
+
+This workspace also ships **JobPilot**, a Streamlit app that wraps the portal CLIs and the
+application workflow in a single interface:
+
+- **Dashboard** - cached jobs, strong fits, application funnel, and profile readiness.
+- **Profile** - import a PDF/TXT/MD resume and maintain the facts every document is based on.
+- **Find jobs** - search LinkedIn and freehire in parallel, filter by seniority and fit score.
+- **Tailor application** - fetch the full posting, score the fit, and generate editable CV and
+  cover-letter drafts (Grok, Ollama, or a deterministic template fallback).
+- **Tracker** - edit the application CSV inline and download it anytime.
+- **Settings** - configure Grok, Ollama, and inspect local prerequisites.
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate          # Windows: .venv\Scripts\activate
+pip install -r requirements.txt
+python3 tools/install_portal_clis.py
+streamlit run app.py
+```
+
+The app opens at <http://localhost:8501>. It uses the repo's Bun CLIs for job search, so
+install [Bun](https://bun.sh) first. An AI key is optional: without one, fit scores and
+documents use deterministic heuristics and templates.
+
+Generated documents, cached jobs, the tracker, and API keys are stored locally and are
+gitignored. Do not commit `data/`, `documents/applications/`, or `~/.jobpilot/config.json`.
+
 ## Prerequisites
 
 - [Claude Code](https://claude.com/claude-code) (CLI). Claude Code has no free tier: you need a Claude Pro/Max/Team subscription or Anthropic API credits (pay-per-token, usually cheaper for occasional use). Using a different agent tool (Codex, Antigravity, Gemini CLI)? Start at [`AGENTS.md`](AGENTS.md) - the portal search skills work there out of the box, and [community forks](https://github.com/MadsLorentzen/ai-job-search/discussions/78) adapt the full workflow.

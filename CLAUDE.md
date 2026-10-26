@@ -1,10 +1,10 @@
-# Job Application Assistant for [YOUR_NAME]
+# Job Application Assistant for Aditya Goyal
 
 <!-- SETUP: This file is populated by running /setup -->
 <!-- After running /setup, all [PLACEHOLDER] tokens will be replaced with your actual information -->
 
 ## Role
-This repo is a job application workspace. Claude acts as a career advisor and application assistant for [YOUR_NAME], helping with:
+This repo is a job application workspace. Claude acts as a career advisor and application assistant for Aditya Goyal, helping with:
 1. **Job fit evaluation** - Assess job postings against your profile (skills, experience, behavioral traits)
 2. **CV tailoring** - Adapt existing CV templates (LaTeX/moderncv) to target specific roles
 3. **Cover letter writing** - Draft targeted cover letters using existing templates (LaTeX)
@@ -13,79 +13,90 @@ This repo is a job application workspace. Claude acts as a career advisor and ap
 
 ## Candidate Profile
 
-<!-- This section is auto-populated by /setup. You can also fill it in manually. -->
-
 ### Identity
-- **Name:** [YOUR_NAME]
-- **Location:** [YOUR_CITY], [YOUR_COUNTRY] ([YOUR_COMMUTE_CONSTRAINTS])
+- **Name:** Aditya Goyal
+- **Email:** adityagoyal447@gmail.com
+- **Phone:** +91 8905813391
+- **Location:** Jaipur, India
 - **Languages:**
   | Language | Level |
   |----------|-------|
-  | [LANGUAGE] | [LEVEL] |
-  <!-- Every language you work in professionally, with your level (CEFR, "native," "professional
-  working proficiency," whatever your CV/LinkedIn use - no need to force it into one scale). An
-  undeclared language is a hard deal-breaker if a posting requires it; a declared language at a
-  lower level than a posting wants is flagged for your own judgment, not auto-rejected. See
-  04-job-evaluation.md's Language Gate. -->
-- **CV language:** [YOUR_CV_LANGUAGE] <!-- English unless your market expects otherwise; /setup asks -->
-
-- **Status:** [YOUR_EMPLOYMENT_STATUS]
-- **LinkedIn headline:** "[YOUR_LINKEDIN_HEADLINE]"
+  | English | Professional |
+- **CV language:** English
+- **Status:** Student / New grad
+- **LinkedIn headline:** "Data Scientist | NLP & LLM Engineer"
+- **Links:** GitHub: https://github.com/Aditya7615 · LinkedIn: https://www.linkedin.com/in/adityagoyal7615/ · Portfolio: https://amazing-pixie-660bfc.netlify.app/
 
 ### Education
-<!-- List your degrees, most recent first -->
-- **[DEGREE_LEVEL] in [FIELD]** ([YEAR_START]-[YEAR_END]) - [INSTITUTION]
-  - Thesis: "[THESIS_TITLE]"
-  - Topics: [KEY_TOPICS]
+**Manipal University Jaipur** — B.Tech, Computer Science (Data Science), 2023–2027
+CGPA: 8.32/10
+
+**Government Senior Secondary School, Sikrai** — XIIth Standard, RBSE, 2021
+
+**Gaytri Public School, Sikrai** — Xth Standard, RBSE, 2019
 
 ### Professional Experience
-<!-- List your roles, most recent first -->
-- **[JOB_TITLE]** ([START_DATE] - [END_DATE]) - **[COMPANY]** ([LOCATION])
-  - [KEY_RESPONSIBILITY_1]
-  - [KEY_RESPONSIBILITY_2]
-  - [KEY_ACHIEVEMENT]
+- [ADD: internships, research, freelance, or part-time experience]
+
+### Selected Projects
+#### SignEase — Sign Language Translator
+*JavaScript, App Lab Data Service, Web Speech API* — [GitHub](https://github.com/Aditya7615/SIgnEase)
+- Built a real-time gesture-to-text translation framework using a CNN model and JavaScript, improving response speed by 25%.
+- Refined data handling and server-side logic to support 15+ concurrent users while improving uptime and reducing translation latency.
+- Integrated the Web Speech API for text-to-speech output, adding an auditory channel for the translated sign language.
+
+#### Customer Segmentation Analysis for Credit Cards
+*Python, Pandas, scikit-learn, Power BI, MySQL* — [GitHub](https://github.com/Aditya7615/Credit-Card-Segmentation-Project)
+- Performed exploratory data analysis and feature engineering on a credit card dataset to identify customer behaviour patterns.
+- Built a segmentation model with K-Means clustering and PCA, identifying four distinct customer archetypes for targeted marketing.
+- Created Power BI dashboards to visualise segment characteristics and support business decisions.
+
+#### Interactive Machine Learning Toolkit
+*Python, Streamlit, scikit-learn, Pandas, NumPy, Matplotlib, Seaborn* — [GitHub](https://github.com/Aditya7615/Machine-Learning-Toolkit)
+- Built a Streamlit app for training, testing, and evaluating ML algorithms on user-uploaded datasets.
+- Implemented 8+ supervised models for classification and regression, with real-time hyperparameter tuning and metric reporting.
+- Deployed the application publicly, covering the full project lifecycle from development to a live tool.
+
+#### Deepfake Detection Model — VISTA'25 Hackathon
+*Python, TensorFlow, Keras, scikit-learn, Pandas, Matplotlib, OpenCV* — [Kaggle](https://www.kaggle.com/code/adityasik/deepfake-imagedetection/edit)
+- Built a CNN with TensorFlow and Keras using EfficientNetB0 transfer learning to classify authentic vs. AI-generated images.
+- Reached 96% validation accuracy and 0.12 LogLoss through preprocessing, hyperparameter tuning, and the Adam optimizer.
+- Built an image pipeline with augmentation to improve generalisation and reduce overfitting.
 
 ### Technical Skills
-- **Primary:** [YOUR_PRIMARY_SKILLS]
-- **Secondary:** [YOUR_SECONDARY_SKILLS]
-- **Domain:** [YOUR_DOMAIN_EXPERTISE]
-- **Software:** [YOUR_TOOLS_AND_SOFTWARE]
+- **Primary:** Python, C/C++, SQL (MySQL), JavaScript, TensorFlow, Keras, scikit-learn, OpenCV, Pandas, NumPy
+- **Secondary:** Matplotlib, Seaborn, ReactJS, Streamlit, Machine Learning, Deep Learning, Data Analysis, Data Visualization, NLP, LLMs, Transformers, PyTorch, Git, GitHub, Power BI, Jupyter Notebook, Google Colab
+- **Domain:** Data Scientist, NLP Engineer, LLM Engineer
+- **Software:** Python, C/C++, SQL (MySQL), JavaScript, TensorFlow, Keras, scikit-learn, OpenCV, Pandas, NumPy, Matplotlib, Seaborn, ReactJS, Streamlit, Machine Learning, Deep Learning, Data Analysis, Data Visualization, NLP, LLMs, Transformers, PyTorch, Git, GitHub, Power BI, Jupyter Notebook, Google Colab
 
 ### Certifications
-<!-- List relevant certifications with dates -->
-- **[CERTIFICATION_NAME]** - [HOURS]h - completed [DATE]
+- Top 10, VISTA'25 Computer Vision Hackathon, for the deepfake detection model
+- Dean's List, 3rd Semester, Manipal University Jaipur
 
 ### Publications
-<!-- List peer-reviewed publications, if any -->
-- [AUTHOR_LIST] ([YEAR]). [TITLE]. [JOURNAL].
+- [ADD: publications, if any]
 
 ### Awards
-<!-- List relevant awards, hackathons, competitions -->
-- [AWARD_NAME] - [EVENT] ([YEAR])
+- [ADD: awards, hackathons, competitions]
 
 ### Behavioral Profile
-<!-- Your behavioral assessment results (PI, DISC, Myers-Briggs, or self-assessment) -->
-- **[TRAIT_1]** - [DESCRIPTION]
-- **[TRAIT_2]** - [DESCRIPTION]
-- **Strengths:** [YOUR_STRENGTHS]
-- **Growth areas:** [YOUR_GROWTH_AREAS]
-- **Thrives in:** [YOUR_IDEAL_ENVIRONMENT]
+- **Strengths:** [ADD: strengths]
+- **Growth areas:** [ADD: growth areas]
+- **Thrives in:** [ADD: ideal environment]
 
 ### What Excites You
-<!-- What motivates you professionally -->
-- [PASSION_1]
-- [PASSION_2]
+- Data Scientist, NLP Engineer, LLM Engineer
 
 ### Target Sectors
-<!-- Industries and companies you're targeting -->
-- [SECTOR_1]: [EXAMPLE_COMPANIES]
-- [SECTOR_2]: [EXAMPLE_COMPANIES]
+- Data Scientist, NLP Engineer, LLM Engineer
 
 ### Deal-breakers
-<!-- Hard constraints on job search. Language requirements are handled separately and
-automatically from your Languages table above - don't duplicate them here. -->
-- [DEALBREAKER_1]
-- [DEALBREAKER_2]
+- [ADD: hard constraints]
+
+### Links
+- GitHub: https://github.com/Aditya7615
+- LinkedIn: https://www.linkedin.com/in/adityagoyal7615/
+- Portfolio: https://amazing-pixie-660bfc.netlify.app/
 
 ## Repo Structure
 - `cv/` - LaTeX CV variants (moderncv template, banking style)
