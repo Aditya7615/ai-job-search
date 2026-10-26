@@ -68,9 +68,9 @@ application workflow in a single interface:
 - **Profile** - import a PDF/TXT/MD resume and maintain the facts every document is based on.
 - **Find jobs** - search LinkedIn and freehire in parallel, filter by seniority and fit score.
 - **Tailor application** - fetch the full posting, score the fit, and generate editable CV and
-  cover-letter drafts (Grok, Ollama, or a deterministic template fallback).
+  cover-letter drafts (Groq, Ollama, or a deterministic template fallback).
 - **Tracker** - edit the application CSV inline and download it anytime.
-- **Settings** - configure Grok, Ollama, and inspect local prerequisites.
+- **Settings** - configure Groq, Ollama, and inspect local prerequisites.
 
 ```bash
 python3 -m venv .venv
@@ -83,6 +83,22 @@ streamlit run app.py
 The app opens at <http://localhost:8501>. It uses the repo's Bun CLIs for job search, so
 install [Bun](https://bun.sh) first. An AI key is optional: without one, fit scores and
 documents use deterministic heuristics and templates.
+
+### Deploy on Streamlit Community Cloud
+
+1. Push this repo to GitHub. Make it public, or grant the Streamlit GitHub app access to the
+   private repo.
+2. At <https://share.streamlit.io> choose **New app**, select the repo and `master` branch, and
+   set the main file to `app.py`.
+3. In the app's **Settings > Secrets**, add a free Groq key:
+   ```toml
+   GROQ_API_KEY = "gsk_..."
+   GROQ_MODEL = "openai/gpt-oss-120b"
+   ```
+4. Save and reboot the app.
+
+Groq's current free-tier chat models are `openai/gpt-oss-120b`, `openai/gpt-oss-20b`, and
+`qwen/qwen3.8-27b`. The older Llama models were retired in August 2026.
 
 Generated documents, cached jobs, the tracker, and API keys are stored locally and are
 gitignored. Do not commit `data/`, `documents/applications/`, or `~/.jobpilot/config.json`.

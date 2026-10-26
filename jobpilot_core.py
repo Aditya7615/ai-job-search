@@ -1,6 +1,6 @@
 """Core services for the JobPilot Streamlit UI.
 
-Wraps the existing ai-job-search portal CLIs, profile data, Grok (xAI),
+Wraps the existing ai-job-search portal CLIs, profile data, Groq (free tier),
 optional local Ollama, the application tracker, and document generation.
 """
 
@@ -13,6 +13,7 @@ import os
 import re
 import shutil
 import subprocess
+import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import date, datetime
 from pathlib import Path
@@ -63,10 +64,17 @@ STATUSES = [
     "withdrawn",
 ]
 
+DEPRECATED_GROQ_MODELS = {
+    "llama-3.1-8b-instant",
+    "llama-3.3-70b-versatile",
+    "qwen/qwen3.6-27b",
+    "grok-4.7",
+}
+
 DEFAULT_SETTINGS = {
-    "xai_api_key": "",
-    "xai_model": "grok-4.7",
-    "xai_base_url": "https://api.x.ai/v1",
+    "groq_api_key": "",
+    "groq_model": "openai/gpt-oss-120b",
+    "groq_base_url": "https://api.groq.com/openai/v1",
     "ollama_base_url": "http://localhost:11434",
     "ollama_model": "",
 }
@@ -659,8 +667,10 @@ def load_settings() -> dict[str, Any]:
         for key in DEFAULT_SETTINGS:
             if key in saved:
                 settings[key] = saved[key]
-    if not settings.get("xai_api_key"):
-        settings["xai_api_key"] = os.environ.get("XAI_API_KEY", "")
+    if settings.get("groq_model") in DEPRECATED_GROQ_MODELS:
+        settings["groq_model"] = DEFAULT_SETTINGS["groq_model"]
+    if not settings.get("groq_api_key"):
+        settings["groq_api_key"] = os.environ.get("GROQ_API_KEY", "")
     return settings
 
 
@@ -681,7 +691,7 @@ def clear_saved_settings() -> None:
         pass
 
 
-def _chat_xai(
+def _chat_groq(
     settings: dict[str, Any],
     messages: list[dict[str, str]],
     json_mode: bool,
@@ -689,11 +699,13 @@ def _chat_xai(
     temperature: float,
     timeout: int = 180,
 ) -> str:
-    api_key = (settings.get("xai_api_key") or "").strip()
+    api_key = (settings.get("groq_api_key") or "").strip()
     if not api_key:
-        raise RuntimeError("No xAI API key configured. Add one in Settings.")
-    base = (settings.get("xai_base_url") or DEFAULT_SETTINGS["xai_base_url"]).rstrip("/")
-    model = (settings.get("xai_model") or DEFAULT_SETTINGS["xai_model"]).strip()
+        raise RuntimeError("No Groq API key configured. Add one in Settings.")
+    base = (settings.get("groq_base_url") or DEFAULT_SETTINGS["groq_base_url"]).rstrip("/")
+    model = (settings.get("groq_model") or DEFAULT_SETTINGS["groq_model"]).strip()
+    if model in DEPRECATED_GROQ_MODELS:
+        model = DEFAULT_SETTINGS["groq_model"]
     payload: dict[str, Any] = {
         "model": model,
         "messages": messages,
@@ -702,23 +714,36 @@ def _chat_xai(
     }
     if json_mode:
         payload["response_format"] = {"type": "json_object"}
-    response = requests.post(
-        f"{base}/chat/completions",
-        headers={
-            "Authorization": f"Bearer {api_key}",
-            "Content-Type": "application/json",
-        },
-        json=payload,
-        timeout=timeout,
-    )
+    response = None
+    for attempt in range(3):
+        response = requests.post(
+            f"{base}/chat/completions",
+            headers={
+                "Authorization": f"Bearer {api_key}",
+                "Content-Type": "application/json",
+            },
+            json=payload,
+            timeout=timeout,
+        )
+        if response.status_code != 429:
+            break
+        try:
+            wait = float(response.headers.get("retry-after", ""))
+        except ValueError:
+            wait = 6 * (attempt + 1)
+        if attempt == 2:
+            break
+        time.sleep(min(wait, 30))
+    if response is None:
+        raise RuntimeError("Groq request failed before receiving a response.")
     if response.status_code != 200:
         detail = response.text[:400] if response.text else response.reason
-        raise RuntimeError(f"xAI API error {response.status_code}: {detail}")
+        raise RuntimeError(f"Groq API error {response.status_code}: {detail}")
     data = response.json()
     try:
         return data["choices"][0]["message"]["content"]
     except (KeyError, IndexError, TypeError) as exc:
-        raise RuntimeError(f"Unexpected xAI response: {str(data)[:300]}") from exc
+        raise RuntimeError(f"Unexpected Groq response: {str(data)[:300]}") from exc
 
 
 def _chat_ollama(
@@ -751,37 +776,39 @@ def generate_text(
     json_mode: bool = False,
     max_tokens: int = 4000,
 ) -> tuple[str, str]:
-    if (settings.get("xai_api_key") or "").strip():
-        content = _chat_xai(
+    if (settings.get("groq_api_key") or "").strip():
+        content = _chat_groq(
             settings,
             [{"role": "system", "content": system}, {"role": "user", "content": user}],
             json_mode=json_mode,
             max_tokens=max_tokens,
             temperature=0.35,
         )
-        model = settings.get("xai_model") or DEFAULT_SETTINGS["xai_model"]
-        return content, f"Grok ({model})"
+        model = settings.get("groq_model") or DEFAULT_SETTINGS["groq_model"]
+        if model in DEPRECATED_GROQ_MODELS:
+            model = DEFAULT_SETTINGS["groq_model"]
+        return content, f"Groq ({model})"
     if (settings.get("ollama_model") or "").strip():
         content = _chat_ollama(
             settings,
             [{"role": "system", "content": system}, {"role": "user", "content": user}],
         )
         return content, f"Ollama ({settings.get('ollama_model')})"
-    raise RuntimeError("No AI engine configured. Add a Grok API key or an Ollama model in Settings.")
+    raise RuntimeError("No AI engine configured. Add a Groq API key or an Ollama model in Settings.")
 
 
-def test_xai(settings: dict[str, Any]) -> str:
-    api_key = (settings.get("xai_api_key") or "").strip()
+def test_groq(settings: dict[str, Any]) -> str:
+    api_key = (settings.get("groq_api_key") or "").strip()
     if not api_key:
-        raise RuntimeError("Enter an xAI API key first.")
-    base = (settings.get("xai_base_url") or DEFAULT_SETTINGS["xai_base_url"]).rstrip("/")
+        raise RuntimeError("Enter a Groq API key first.")
+    base = (settings.get("groq_base_url") or DEFAULT_SETTINGS["groq_base_url"]).rstrip("/")
     response = requests.get(
         f"{base}/models",
         headers={"Authorization": f"Bearer {api_key}"},
         timeout=30,
     )
     if response.status_code != 200:
-        raise RuntimeError(f"xAI returned {response.status_code}: {response.text[:300]}")
+        raise RuntimeError(f"Groq returned {response.status_code}: {response.text[:300]}")
     data = response.json()
     models = data.get("data") or []
     names = [item.get("id", "") for item in models if isinstance(item, dict)]
@@ -851,14 +878,23 @@ JOB
 def cv_prompt(profile: dict[str, Any], job: dict[str, Any]) -> str:
     return f"""Write a tailored, ATS-friendly CV in Markdown for this candidate and job.
 
-Rules:
+Structure rules:
+- Start with the candidate's name as an H1, then one contact line, then these exact H2
+  headings in this order, only when the profile has content for them:
+  Professional Summary, Technical Skills, Education, Experience, Projects,
+  Certifications.
+- Use bold text for employers, job titles, project names, and degrees. Use bullet points
+  (one line each) for achievements. Keep the hierarchy obvious.
+- Include at most 3 of the candidate's most job-relevant projects. Omit unrelated projects.
+- Keep the rendered CV to 1-2 pages. Remove lower-school details if space is tight.
+
+Content rules:
 - Use only facts from the candidate profile. Never invent anything.
-- 1-2 pages when rendered. No tables, no columns, no icons, no images.
-- Start with the candidate's name as an H1, then contact line, then the sections that
-  genuinely have content: Summary, Skills, Education, Experience, Projects, Certifications.
 - Rewrite the summary and reorder skills to target this job.
 - Use the posting's exact keywords only where the candidate truthfully has them.
 - Add [ADD: ...] placeholders for important facts that are missing.
+- Use normal ASCII hyphens and quotes, not non-breaking or fancy Unicode characters.
+- No tables, columns, icons, images, horizontal rules, or "references available" lines.
 - Output ONLY the Markdown CV, with no commentary.
 
 CANDIDATE PROFILE
@@ -868,6 +904,78 @@ JOB
 {_job_text(job)}
 """
 
+
+def cv_review_prompt(profile: dict[str, Any], job: dict[str, Any], cv_markdown: str) -> str:
+    return f"""Audit this tailored CV against the candidate profile and the job posting.
+
+Return ONLY a JSON object with exactly these keys:
+- alignment_score: integer 0-100
+- verdict: one of "Strong alignment", "Good alignment", "Needs work"
+- grounding_issues: array of short strings for claims not supported by the profile
+- alignment_issues: array of short strings for important job requirements the CV misses
+- missing_keywords: array of exact posting terms absent from the CV that the candidate can
+  truthfully claim
+- formatting_issues: array of short strings for structure or ATS problems
+
+Rules:
+- Be specific and concise. Each array item must be one short sentence.
+- Never suggest adding a fact the profile does not support.
+- Output ONLY the JSON object, with no commentary.
+
+CANDIDATE PROFILE
+{profile_to_text(profile)}
+
+JOB
+{_job_text(job)}
+
+CURRENT CV
+{cv_markdown}
+"""
+
+
+def cv_revision_prompt(
+    profile: dict[str, Any],
+    job: dict[str, Any],
+    cv_markdown: str,
+    review: dict[str, Any],
+) -> str:
+    issues: list[str] = []
+    for field in ("grounding_issues", "alignment_issues", "formatting_issues"):
+        for item in review.get(field) or []:
+            issues.append(f"- {item}")
+    missing = review.get("missing_keywords") or []
+    if missing:
+        issues.append("- Consider truthful use of these posting terms: " + ", ".join(missing))
+    issue_text = "\n".join(issues) or "- Improve clarity, structure, and job alignment."
+
+    return f"""Rewrite the CV below to fix the audit findings. Keep every truthful fact.
+
+AUDIT FINDINGS
+{issue_text}
+
+Rewrite rules:
+- Start with the candidate's name as an H1, then one contact line, then these exact H2
+  headings in this order, only when the profile has content for them:
+  Professional Summary, Technical Skills, Education, Experience, Projects,
+  Certifications.
+- Use bold text for employers, job titles, project names, and degrees. Use bullet points
+  (one line each) for achievements.
+- Keep at most 3 of the most job-relevant projects. Keep it to 1-2 rendered pages.
+- Never invent employers, degrees, dates, metrics, skills, or achievements.
+- Remove or soften unsupported claims. Keep [ADD: ...] placeholders for missing facts.
+- Use the posting's exact keywords only where the candidate truthfully has them.
+- Use normal ASCII hyphens and quotes. No tables, columns, icons, images, or horizontal rules.
+- Output ONLY the complete Markdown CV, with no commentary.
+
+CANDIDATE PROFILE
+{profile_to_text(profile)}
+
+JOB
+{_job_text(job)}
+
+CURRENT CV
+{cv_markdown}
+"""
 
 def cover_prompt(profile: dict[str, Any], job: dict[str, Any]) -> str:
     return f"""Write a one-page cover letter in Markdown for this candidate and job.
@@ -910,7 +1018,7 @@ def fallback_fit(profile: dict[str, Any], job: dict[str, Any]) -> dict[str, Any]
     summary = (
         f"{job.get('title', 'This role')} at {job.get('company', 'the company')} looks like a "
         f"{scored['fit_verdict'].lower()} based on title, location, and skill overlap. "
-        "Fetch the full posting and add Grok in Settings for a deeper evaluation."
+        "Fetch the full posting and add Groq in Settings for a deeper evaluation."
     )
     return {
         "score": scored["fit_score"],
@@ -1017,7 +1125,7 @@ def generate_cv(
         text, engine = generate_text(
             settings, SYSTEM_PROMPT, cv_prompt(profile, job), max_tokens=4000
         )
-        return text.strip(), engine, None
+        return sanitize_document_text(text).strip(), engine, None
     except Exception as exc:
         return _fallback_cv(profile), "Template (no AI key)", str(exc)
 
@@ -1029,9 +1137,52 @@ def generate_cover(
         text, engine = generate_text(
             settings, SYSTEM_PROMPT, cover_prompt(profile, job), max_tokens=2000
         )
-        return text.strip(), engine, None
+        return sanitize_document_text(text).strip(), engine, None
     except Exception as exc:
         return _fallback_cover(profile, job), "Template (no AI key)", str(exc)
+
+
+def verify_cv(
+    profile: dict[str, Any], job: dict[str, Any], cv_markdown: str, settings: dict[str, Any]
+) -> dict[str, Any]:
+    prompt = cv_review_prompt(profile, job, cv_markdown)
+    errors: list[str] = []
+    for json_mode in (True, False):
+        try:
+            text, engine = generate_text(
+                settings,
+                SYSTEM_PROMPT,
+                prompt,
+                json_mode=json_mode,
+                max_tokens=2000,
+            )
+            data = parse_json_response(text)
+            if not isinstance(data, dict):
+                raise RuntimeError("Groq returned an unexpected review format.")
+            data["engine"] = engine
+            return data
+        except Exception as exc:
+            errors.append(str(exc))
+    return {"error": " | ".join(errors)}
+
+
+def revise_cv(
+    profile: dict[str, Any],
+    job: dict[str, Any],
+    cv_markdown: str,
+    review: dict[str, Any],
+    settings: dict[str, Any],
+) -> tuple[str, str, str | None]:
+    try:
+        text, engine = generate_text(
+            settings,
+            SYSTEM_PROMPT,
+            cv_revision_prompt(profile, job, cv_markdown, review),
+            max_tokens=4000,
+        )
+        return sanitize_document_text(text).strip(), engine, None
+    except Exception as exc:
+        return cv_markdown, "Unchanged", str(exc)
 
 
 # ---------------------------------------------------------------------------
@@ -1039,29 +1190,50 @@ def generate_cover(
 # ---------------------------------------------------------------------------
 
 DOCUMENT_CSS = """
-@page { size: A4; margin: 18mm 17mm; }
+@page { size: A4; margin: 15mm 16mm; }
 body {
   font-family: Helvetica, Arial, sans-serif;
-  font-size: 10.5pt;
-  line-height: 1.45;
+  font-size: 10pt;
+  line-height: 1.38;
   color: #1b1f24;
 }
-h1 { font-size: 22pt; margin: 0 0 4pt 0; color: #111827; }
-h2 { font-size: 12.5pt; margin: 14pt 0 5pt 0; padding-bottom: 2pt;
-     border-bottom: 1px solid #d1d5db; color: #111827; text-transform: uppercase;
-     letter-spacing: 0.4pt; }
-h3 { font-size: 11pt; margin: 9pt 0 2pt 0; }
-p { margin: 3pt 0 6pt 0; }
-ul { margin: 3pt 0 6pt 16pt; padding: 0; }
-li { margin: 2pt 0; }
+h1 { font-size: 21pt; margin: 0 0 2pt 0; color: #111827; letter-spacing: 0.2pt; }
+h2 { font-size: 11.5pt; margin: 12pt 0 4pt 0; padding-bottom: 2pt;
+     border-bottom: 1.2px solid #cbd5e1; color: #111827; text-transform: uppercase;
+     letter-spacing: 0.5pt; page-break-after: avoid; }
+h3 { font-size: 10.5pt; margin: 7pt 0 1pt 0; page-break-after: avoid; }
+p { margin: 2pt 0 4pt 0; }
+ul { margin: 2pt 0 4pt 14pt; padding: 0; }
+li { margin: 1.5pt 0; }
 a { color: #1d4ed8; text-decoration: none; }
 strong { color: #111827; }
+em { color: #334155; }
 """
+
+UNICODE_REPLACEMENTS = {
+    "\u2010": "-",
+    "\u2011": "-",
+    "\u2012": "-",
+    "\u2013": "-",
+    "\u2014": "-",
+    "\u00a0": " ",
+    "\u2009": " ",
+    "\u202f": " ",
+    "\u200b": "",
+}
+
+
+def sanitize_document_text(text: str) -> str:
+    """Normalize characters xhtml2pdf renders as ZapfDingbats glyphs."""
+    for old, new in UNICODE_REPLACEMENTS.items():
+        text = text.replace(old, new)
+    return text
 
 
 def markdown_to_html(markdown_text: str, title: str = "Document") -> str:
     import markdown as markdown_lib
 
+    markdown_text = sanitize_document_text(markdown_text)
     body = markdown_lib.markdown(markdown_text, extensions=["extra", "sane_lists"])
     return (
         "<!DOCTYPE html><html><head><meta charset='utf-8'>"

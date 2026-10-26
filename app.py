@@ -33,6 +33,25 @@ COUNTRY_OPTIONS = {
     "United Arab Emirates": "AE",
 }
 
+
+def apply_cloud_secrets(settings: dict) -> dict:
+    """Overlay Streamlit Cloud secrets so the deployed app can use a shared key."""
+    try:
+        secrets = st.secrets
+        key = str(secrets.get("GROQ_API_KEY", "") or "").strip()
+        model = str(secrets.get("GROQ_MODEL", "") or "").strip()
+        base = str(secrets.get("GROQ_BASE_URL", "") or "").strip()
+    except Exception:
+        return settings
+    if key:
+        settings["groq_api_key"] = key
+    if model:
+        settings["groq_model"] = model
+    if base:
+        settings["groq_base_url"] = base
+    return settings
+
+
 st.set_page_config(
     page_title="JobPilot",
     page_icon=str(core.BASE_DIR / "assets" / "mascot" / "pip_flight_loop.gif"),
@@ -92,7 +111,7 @@ st.markdown(
 if "profile" not in st.session_state:
     st.session_state.profile = core.load_profile()
 if "settings" not in st.session_state:
-    st.session_state.settings = core.load_settings()
+    st.session_state.settings = apply_cloud_secrets(core.load_settings())
 if "jobs" not in st.session_state:
     st.session_state.jobs = core.load_jobs()
 if "fits" not in st.session_state:
@@ -108,6 +127,8 @@ if "nav" not in st.session_state:
 
 profile = st.session_state.profile
 settings = st.session_state.settings
+if settings.get("groq_model") in core.DEPRECATED_GROQ_MODELS:
+    settings["groq_model"] = core.DEFAULT_SETTINGS["groq_model"]
 jobs = st.session_state.jobs
 
 
@@ -181,7 +202,7 @@ def sidebar() -> str:
         tracker_count = len(core.load_tracker())
     except Exception:
         tracker_count = 0
-    has_key = bool((settings.get("xai_api_key") or "").strip())
+    has_key = bool((settings.get("groq_api_key") or "").strip())
     has_resume = bool((profile.get("cv_text") or "").strip())
 
     mascot = core.BASE_DIR / "assets" / "mascot" / "pip_flight_loop.gif"
@@ -205,7 +226,7 @@ def sidebar() -> str:
           Resume <span class="pill {'pill-ok' if has_resume else 'pill-warn'}">
           {'indexed' if has_resume else 'missing'}</span><br>
           AI engine <span class="pill {'pill-ok' if has_key else 'pill-warn'}">
-          {'Grok ready' if has_key else 'key needed'}</span>
+          {'Groq ready' if has_key else 'key needed'}</span>
         </div>
         """,
         unsafe_allow_html=True,
@@ -370,8 +391,8 @@ def page_dashboard() -> None:
             go("Profile")
 
         st.subheader("AI engine")
-        if (settings.get("xai_api_key") or "").strip():
-            st.success(f"Grok ready ({settings.get('xai_model')}).")
+        if (settings.get("groq_api_key") or "").strip():
+            st.success(f"Groq ready ({settings.get('groq_model')}).")
         elif (settings.get("ollama_model") or "").strip():
             st.info(f"Using Ollama ({settings.get('ollama_model')}).")
         else:
@@ -408,7 +429,7 @@ def page_dashboard() -> None:
 def page_profile() -> None:
     page_header(
         "Profile",
-        "These facts are the only source of truth used by Grok. Keep them honest and current.",
+        "These facts are the only source of truth used by Groq. Keep them honest and current.",
     )
     pct = core.profile_completeness(profile)
     st.progress(pct / 100, text=f"Profile completeness: {pct}%")
@@ -796,8 +817,8 @@ def page_tailor() -> None:
                     result = core.generate_fit(profile, job, settings)
                     st.session_state.fits[key] = result
                 st.rerun()
-            if (settings.get("xai_api_key") or "").strip():
-                st.caption(f"Engine: Grok ({settings.get('xai_model')})")
+            if (settings.get("groq_api_key") or "").strip():
+                st.caption(f"Engine: Groq ({settings.get('groq_model')})")
             elif (settings.get("ollama_model") or "").strip():
                 st.caption(f"Engine: Ollama ({settings.get('ollama_model')})")
             else:
@@ -839,6 +860,7 @@ def page_tailor() -> None:
                 docs["cv"] = text
                 docs["cv_engine"] = engine
                 docs["cv_warning"] = warning
+                docs.pop("cv_review", None)
                 st.session_state.pop(f"cv_edit_{key}", None)
             st.rerun()
         if action2.button("Generate cover letter", width="stretch"):
@@ -865,6 +887,7 @@ def page_tailor() -> None:
                         "cover_warning": cover_warning,
                     }
                 )
+                docs.pop("cv_review", None)
                 st.session_state.pop(f"cv_edit_{key}", None)
                 st.session_state.pop(f"cover_edit_{key}", None)
             st.rerun()
@@ -885,6 +908,55 @@ def page_tailor() -> None:
                     label_visibility="collapsed",
                 )
                 st.caption(f"Engine: {docs.get('cv_engine', '—')}")
+                if st.button(
+                    "Verify & align CV with this job",
+                    width="stretch",
+                    key=f"verify_cv_{key}",
+                    disabled=not cv_value.strip(),
+                ):
+                    with st.spinner("Auditing CV against the profile and posting..."):
+                        docs["cv_review"] = core.verify_cv(profile, job, cv_value, settings)
+                    st.rerun()
+
+                review = docs.get("cv_review") or {}
+                if review.get("error"):
+                    st.warning(f"Verification unavailable: {review['error']}")
+                elif review:
+                    score = as_int(review.get("alignment_score"), 0)
+                    st.metric("Resume alignment", f"{score}/100")
+                    st.caption(f"Verdict: {review.get('verdict') or '—'}")
+                    for label, field in [
+                        ("Grounding", "grounding_issues"),
+                        ("Job alignment", "alignment_issues"),
+                        ("Formatting", "formatting_issues"),
+                    ]:
+                        items = review.get(field) or []
+                        if items:
+                            st.markdown(f"**{label}**")
+                            for item in items:
+                                st.markdown(f"- {item}")
+                    if review.get("missing_keywords"):
+                        st.caption(
+                            "Missing keywords: " + ", ".join(review["missing_keywords"])
+                        )
+                    if st.button(
+                        "Rewrite CV to fix these issues",
+                        type="primary",
+                        width="stretch",
+                        key=f"apply_cv_review_{key}",
+                    ):
+                        with st.spinner("Rewriting CV..."):
+                            revised, engine, warning = core.revise_cv(
+                                profile, job, cv_value, review, settings
+                            )
+                        if warning:
+                            st.warning(f"Rewrite failed: {warning}")
+                        else:
+                            docs["cv"] = revised
+                            docs["cv_engine"] = engine
+                            docs.pop("cv_review", None)
+                            st.session_state.pop(f"cv_edit_{key}", None)
+                            st.rerun()
             with cover_col:
                 st.markdown("**Cover letter**")
                 if docs.get("cover_warning"):
@@ -898,6 +970,10 @@ def page_tailor() -> None:
                 )
                 st.caption(f"Engine: {docs.get('cover_engine', '—')}")
 
+            st.caption(
+                "The editor shows Markdown source. Use **Download CV (.pdf)** for the "
+                "formatted resume layout, or expand the preview below."
+            )
             d1, d2, d3, d4 = st.columns(4)
             if cv_value:
                 d1.download_button(
@@ -935,6 +1011,13 @@ def page_tailor() -> None:
                     )
                 except Exception as exc:
                     d4.caption(f"PDF unavailable: {exc}")
+
+            if cv_value:
+                with st.expander("Preview rendered CV", expanded=False):
+                    st.markdown(cv_value)
+            if cover_value:
+                with st.expander("Preview rendered cover letter", expanded=False):
+                    st.markdown(cover_value)
 
             if fit is None and (cv_value or cover_value):
                 st.caption("No fit analysis yet. Saving the package will use heuristic fit notes.")
@@ -1024,7 +1107,7 @@ def page_tracker() -> None:
 def page_settings() -> None:
     page_header(
         "Settings",
-        "Connect Grok, optionally use a local Ollama model, and check the repo prerequisites.",
+        "Connect Groq, optionally use a local Ollama model, and check the repo prerequisites.",
     )
     settings_now = st.session_state.settings
     prereqs = core.cli_status()
@@ -1042,42 +1125,47 @@ def page_settings() -> None:
         st.caption(f"{label}: {'Ready' if ok else 'Missing'} — {detail}")
 
     st.divider()
-    st.subheader("Grok (xAI)")
+    st.subheader("Groq (free tier)")
     st.caption(
-        "Create a key at https://console.x.ai. The key is sent only to api.x.ai and is stored "
+        "Create a free key at https://console.groq.com/keys. The key is sent only to "
+        "api.groq.com and is stored "
         f"locally at {core.CONFIG_PATH} when you choose to remember it."
     )
     c1, c2 = st.columns([2, 1])
-    xai_key = c1.text_input(
-        "xAI API key",
-        value=settings_now.get("xai_api_key", ""),
+    groq_key = c1.text_input(
+        "Groq API key",
+        value=settings_now.get("groq_api_key", ""),
         type="password",
-        key="settings_xai_key",
+        key="settings_groq_key",
     )
-    xai_model = c2.text_input(
+    groq_model = c2.text_input(
         "Model",
-        value=settings_now.get("xai_model", "grok-4.7"),
-        key="settings_xai_model",
+        value=settings_now.get("groq_model", "openai/gpt-oss-120b"),
+        key="settings_groq_model",
     )
-    xai_base = st.text_input(
+    groq_base = st.text_input(
         "API base URL",
-        value=settings_now.get("xai_base_url", "https://api.x.ai/v1"),
-        key="settings_xai_base",
+        value=settings_now.get("groq_base_url", "https://api.groq.com/openai/v1"),
+        key="settings_groq_base",
     )
-    remember = st.checkbox("Remember key on this Mac", value=True, key="settings_remember")
+    st.caption(
+        "Free-tier model IDs: `openai/gpt-oss-120b`, `openai/gpt-oss-20b`, "
+        "`qwen/qwen3.8-27b`. The old Llama models were retired on Groq."
+    )
+    remember = st.checkbox("Remember key on this device", value=True, key="settings_remember")
 
     def settings_payload() -> dict:
         return {
             **settings_now,
-            "xai_api_key": xai_key.strip(),
-            "xai_model": xai_model.strip() or "grok-4.7",
-            "xai_base_url": xai_base.strip() or "https://api.x.ai/v1",
+            "groq_api_key": groq_key.strip(),
+            "groq_model": groq_model.strip() or "openai/gpt-oss-120b",
+            "groq_base_url": groq_base.strip() or "https://api.groq.com/openai/v1",
         }
 
     t1, t2 = st.columns(2)
-    if t1.button("Test Grok connection", width="stretch"):
+    if t1.button("Test Groq connection", width="stretch"):
         try:
-            message = core.test_xai(settings_payload())
+            message = core.test_groq(settings_payload())
             st.success(message)
         except Exception as exc:
             st.error(str(exc))
@@ -1089,7 +1177,7 @@ def page_settings() -> None:
             flash("AI settings saved.")
         else:
             core.clear_saved_settings()
-            core.save_settings({**payload, "xai_api_key": ""})
+            core.save_settings({**payload, "groq_api_key": ""})
             flash("Settings saved for this session only; the key was not written to disk.")
         st.rerun()
 
@@ -1117,9 +1205,9 @@ def page_settings() -> None:
     if o2.button("Save Ollama settings", width="stretch"):
         payload = {
             **settings_now,
-            "xai_api_key": xai_key.strip(),
-            "xai_model": xai_model.strip() or "grok-4.7",
-            "xai_base_url": xai_base.strip() or "https://api.x.ai/v1",
+            "groq_api_key": groq_key.strip(),
+            "groq_model": groq_model.strip() or "openai/gpt-oss-120b",
+            "groq_base_url": groq_base.strip() or "https://api.groq.com/openai/v1",
             "ollama_base_url": ollama_base.strip() or "http://localhost:11434",
             "ollama_model": ollama_model.strip(),
         }
@@ -1128,7 +1216,7 @@ def page_settings() -> None:
             core.save_settings(payload)
         else:
             core.clear_saved_settings()
-            core.save_settings({**payload, "xai_api_key": ""})
+            core.save_settings({**payload, "groq_api_key": ""})
         flash("Ollama settings saved.")
         st.rerun()
 
@@ -1138,7 +1226,7 @@ def page_settings() -> None:
     with c1:
         if st.button("Clear saved API key", width="stretch"):
             fresh = dict(st.session_state.settings)
-            fresh["xai_api_key"] = ""
+            fresh["groq_api_key"] = ""
             st.session_state.settings = fresh
             core.save_settings(fresh)
             flash("Saved key removed. Your other settings were kept.")
