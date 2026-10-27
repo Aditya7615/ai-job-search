@@ -701,7 +701,7 @@ def _chat_groq(
     json_mode: bool,
     max_tokens: int,
     temperature: float,
-    timeout: int = 180,
+    timeout: int = 90,
 ) -> str:
     api_key = (settings.get("groq_api_key") or "").strip()
     if not api_key:
@@ -1043,7 +1043,7 @@ def generate_fit(
 ) -> dict[str, Any]:
     try:
         text, engine = generate_text(
-            settings, SYSTEM_PROMPT, fit_prompt(profile, job), json_mode=True, max_tokens=1200
+            settings, SYSTEM_PROMPT, fit_prompt(profile, job), json_mode=True, max_tokens=800
         )
         data = parse_json_response(text)
         data["engine"] = engine
