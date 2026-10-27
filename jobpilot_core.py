@@ -867,6 +867,8 @@ Return ONLY a JSON object with exactly these keys:
 - keywords: array of 5-10 exact terms from the posting worth mirroring in the CV
 - recommendation: one of "apply", "maybe", "skip"
 
+Be fair and balanced. Do not hallucinate missing tools/technologies unless they are explicitly listed as required/preferred in the job posting. Only mention gaps that are clearly stated in the job requirements. If the candidate has relevant transferable skills or projects, give credit for them.
+
 CANDIDATE PROFILE
 {profile_to_text(profile)}
 
