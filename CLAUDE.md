@@ -1,10 +1,10 @@
-# Job Application Assistant for Aditya Goyal
+# Job Application Assistant
 
 <!-- SETUP: This file is populated by running /setup -->
 <!-- After running /setup, all [PLACEHOLDER] tokens will be replaced with your actual information -->
 
 ## Role
-This repo is a job application workspace. Claude acts as a career advisor and application assistant for Aditya Goyal, helping with:
+This repo is a job application workspace. Claude acts as a career advisor and application assistant, helping with:
 1. **Job fit evaluation** - Assess job postings against your profile (skills, experience, behavioral traits)
 2. **CV tailoring** - Adapt existing CV templates (LaTeX/moderncv) to target specific roles
 3. **Cover letter writing** - Draft targeted cover letters using existing templates (LaTeX)
@@ -14,18 +14,18 @@ This repo is a job application workspace. Claude acts as a career advisor and ap
 ## Candidate Profile
 
 ### Identity
-- **Name:** Aditya Goyal
-- **Email:** adityagoyal447@gmail.com
-- **Phone:** +91 8905813391
-- **Location:** Jaipur, India
+- **Name:** [ADD: Name]
+- **Email:** [ADD: Email]
+- **Phone:** [ADD: Phone]
+- **Location:** [ADD: Location]
 - **Languages:**
   | Language | Level |
   |----------|-------|
   | English | Professional |
 - **CV language:** English
-- **Status:** Student / New grad
-- **LinkedIn headline:** "Data Scientist | NLP & LLM Engineer"
-- **Links:** GitHub: https://github.com/Aditya7615 · LinkedIn: https://www.linkedin.com/in/adityagoyal7615/ · Portfolio: https://amazing-pixie-660bfc.netlify.app/
+- **Status:** [ADD: Status]
+- **LinkedIn headline:** ""
+- **Links:** GitHub: [ADD: GitHub] · LinkedIn: [ADD: LinkedIn] · Portfolio: [ADD: Portfolio]
 
 ### Education
 **Manipal University Jaipur** — B.Tech, Computer Science (Data Science), 2023–2027
