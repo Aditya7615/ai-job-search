@@ -1,17 +1,55 @@
-{"name": "Aditya Goyal", "email": "adityagoyal447@gmail.com", "phone": "+91 8905813391", "location": "Jaipur, India", "headline": "Data Scientist | NLP & LLM Engineer", "summary": "B.Tech CSE (Data Science) student at Manipal University Jaipur with a strong foundation in machine learning, deep learning, and data analysis. Built end-to-end projects including sign language translator, customer segmentation, ML toolkit, and deepfake detection. Comfortable with Python, TensorFlow, scikit-learn, SQL, and Power BI; seeking Data Scientist and NLP/LLM Engineer roles in India.", "target_roles": ["Data Scientist", "NLP Engineer", "LLM Engineer"], "target_locations": ["India", "Remote"], "experience_level": "Student / New grad", "work_modes": ["remote", "hybrid", "onsite"], "languages": ["English"], "skills": ["Python", "Machine Learning", "Deep Learning", "NLP", "LLMs", "Transformers", "PyTorch", "TensorFlow", "scikit-learn", "Pandas", "NumPy", "SQL", "Streamlit", "Git", "Data Visualization"], "education": "**Manipal University Jaipur** — B.Tech, Computer Science (Data Science), 2023–2027
-CGPA: 8.32/10", "experience": "", "projects": "### SignEase — Sign Language Translator
-*JavaScript, App Lab Data Service, Web Speech API* — [GitHub](https://github.com/Aditya7615/SIgnEase)
-- Built a real-time gesture-to-text translation framework using a CNN model.
-
-### Customer Segmentation Analysis for Credit Cards
-*Python, Pandas, scikit-learn, Power BI, MySQL* — [GitHub](https://github.com/Aditya7615/Credit-Card-Segmentation-Project)
-- Performed EDA and built K-Means clustering model with PCA.
-
-### Interactive Machine Learning Toolkit
-*Python, Streamlit, scikit-learn, Pandas, NumPy* — [GitHub](https://github.com/Aditya7615/Machine-Learning-Toolkit)
-- Built Streamlit app for training/testing ML algorithms.
-
-### Deepfake Detection Model — VISTA'25 Hackathon
-*Python, TensorFlow, Keras, OpenCV* — [Kaggle](https://www.kaggle.com/code/adityasik/deepfake-imagedetection)
-- Built CNN with EfficientNetB0, reached 96% validation accuracy.", "certifications": "- Top 10, VISTA'25 Computer Vision Hackathon
-- Dean's List", "links": {"linkedin": "https://www.linkedin.com/in/adityagoyal7615/", "github": "https://github.com/Aditya7615", "portfolio": "https://amazing-pixie-660bfc.netlify.app/"}, "dealbreakers": "", "cv_text": "", "updated_at": "2026-10-27T23:30:00"}
+{
+  "name": "Aditya Goyal",
+  "email": "adityagoyal447@gmail.com",
+  "phone": "+91 8905813391",
+  "location": "Jaipur, India",
+  "headline": "Data Scientist | NLP & LLM Engineer",
+  "summary": "B.Tech CSE (Data Science) student at Manipal University Jaipur with a strong foundation in machine learning, deep learning, and data analysis. Built end-to-end projects including sign language translator, customer segmentation, ML toolkit, and deepfake detection. Comfortable with Python, TensorFlow, scikit-learn, SQL, and Power BI; seeking Data Scientist and NLP/LLM Engineer roles in India.",
+  "target_roles": [
+    "Data Scientist",
+    "NLP Engineer",
+    "LLM Engineer"
+  ],
+  "target_locations": [
+    "India",
+    "Remote"
+  ],
+  "experience_level": "Student / New grad",
+  "work_modes": [
+    "remote",
+    "hybrid",
+    "onsite"
+  ],
+  "languages": [
+    "English"
+  ],
+  "skills": [
+    "Python",
+    "Machine Learning",
+    "Deep Learning",
+    "NLP",
+    "LLMs",
+    "Transformers",
+    "PyTorch",
+    "TensorFlow",
+    "scikit-learn",
+    "Pandas",
+    "NumPy",
+    "SQL",
+    "Streamlit",
+    "Git",
+    "Data Visualization"
+  ],
+  "education": "**Manipal University Jaipur** — B.Tech, Computer Science (Data Science), 2023–2027\nCGPA: 8.32/10",
+  "experience": "4 years",
+  "projects": "### SignEase — Sign Language Translator\n*JavaScript, App Lab Data Service, Web Speech API* — [GitHub](https://github.com/Aditya7615/SIgnEase)\n- Built a real-time gesture-to-text translation framework using a CNN model.\n\n### Customer Segmentation Analysis for Credit Cards\n*Python, Pandas, scikit-learn, Power BI, MySQL* — [GitHub](https://github.com/Aditya7615/Credit-Card-Segmentation-Project)\n- Performed EDA and built K-Means clustering model with PCA.\n\n### Interactive Machine Learning Toolkit\n*Python, Streamlit, scikit-learn, Pandas, NumPy* — [GitHub](https://github.com/Aditya7615/Machine-Learning-Toolkit)\n- Built Streamlit app for training/testing ML algorithms.\n\n### Deepfake Detection Model — VISTA'25 Hackathon\n*Python, TensorFlow, Keras, OpenCV* — [Kaggle](https://www.kaggle.com/code/adityasik/deepfake-imagedetection)\n- Built CNN with EfficientNetB0, reached 96% validation accuracy.",
+  "certifications": "- Top 10, VISTA'25 Computer Vision Hackathon\n- Dean's List",
+  "links": {
+    "linkedin": "https://www.linkedin.com/in/adityagoyal7615/",
+    "github": "https://github.com/Aditya7615",
+    "portfolio": "https://amazing-pixie-660bfc.netlify.app/"
+  },
+  "dealbreakers": "",
+  "cv_text": "Aditya Goyal\nJaipur, India | +91 8905813391 | adityagoyal447@gmail.com | LinkedIn | GitHub | LeetCode\nEducation\nManipal University Jaipur Jaipur, India\nB.Tech, CSE (Data Science) — CGPA: 8.58/10.0 2023 – 2027\nGovernment Senior Secondary School Dausa, Rajasthan\nXIIth Standard, Rajasthan Board — 88.8% 2019 – 2021\nGayatri Public School Dausa, Rajasthan\nXth Standard, Rajasthan Board — 71.5% 2017 – 2019\nCore Coursework: Data Structures & Algorithms, Object-Oriented Programming, Database Management Systems,\nOperating Systems, Computer Networks\nExperience\nSoul AI (via Deacon AI) Remote\nAI Freelancer – Code Evaluation & Algorithm Auditing Present\n• Audit machine learning and deep learning code generated by LLMs for execution efficiency, structural correctness, and\nadherence to software engineering best practices.\n• Conduct detailed qualitative analysis and data evaluations to benchmark LLM outputs against complex structural and\nlogical reasoning expectations.\n• Evaluate algorithmic implementations for time and space complexity, ensuring optimal performance across various data\nstructures and execution environments.\nProjects\nGraph-Based RAG & Agentic System | Python, LangChain, LangGraph, NetworkX, Neo4j\n• Developed a scalable data ingestion pipeline to parse unstructured files and serve real-time contextual queries using vector\nsearch combined with graph databases.\n• Implemented graph-based node extraction and autonomous workflows to navigate multi-hop reasoning tasks, optimizing\nretrieval structures and significantly reducing hallucinations.\nAI Image Detector (VISTA’25 Hackathon) | Python, TensorFlow, Keras, OpenCV\n• Engineered a high-performing deep learning model to classify images as authentic or AI-generated, securing a Top 10\nranking in the VISTA’25 Computer Vision Hackathon.\n• Architected a Convolutional Neural Network leveraging transfer learning to maximize feature extraction, achieving 96%\nvalidation accuracy and robust computational efficiency.\nAutomated Text Condenser | Python, NLP, Flask/Streamlit, Transformers\n• Engineered an automated text summarization tool utilizing advanced NLP and extractive summarization algorithms to\ncondense lengthy documents while preserving semantic fidelity.\n• Built modular inference routines and API endpoints for seamless integration and deployment of text extraction pipelines\ninto broader application ecosystems.\nAchievements & Honors\nCompetitive Programming: Solved over 200 Data Structures and Algorithms (DSA) problems in Python on LeetCode,\noptimizing solutions for stringent time and space complexities.\nHackathon Rankings: Ranked Top 10 in VISTA’25 Computer Vision Hackathon and secured a Top Finalist position in\nthe Amazon ML Challenge 2025 out of thousands of teams.\nAmazon ML Summer School (2026): Selected into the highly competitive, selective nationwide training program\nfocusing on scalable algorithms and machine learning systems.\nPublished Indian Patent (2025): Co-inventor of ”A Closed-Loop Personalized Avatar and Outfit Recommendation\nSystem” (App. No. 202511103291 A, Published Dec 2025).\nTechnical Skills\nProgramming Languages: C/C++, Python, SQL (MySQL), JavaScript\nCore Computer Science: Data Structures & Algorithms (DSA), Object-Oriented Programming (OOP), Database\nManagement, Operating Systems\nInfrastructure & Tools: Git, GitHub, Jupyter, Postman\nFrameworks & Libraries: TensorFlow, PyTorch, Scikit-learn, Pandas, NumPy, OpenCV, LangChain",
+  "updated_at": "2026-10-27T23:36:52"
+}
