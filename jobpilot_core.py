@@ -1009,7 +1009,8 @@ def fallback_fit(profile: dict[str, Any], job: dict[str, Any]) -> dict[str, Any]
     if matched:
         strengths.append("Matching skills: " + ", ".join(matched[:6]))
     target_roles = ", ".join(profile.get("target_roles") or [])
-    strengths.append(f"Target roles on this profile: {target_roles}")
+    if target_roles:
+        strengths.append(f"Target roles on this profile: {target_roles}")
     if (profile.get("experience_level") or "").lower().startswith(("student", "new")):
         strengths.append("Entry-level positioning is appropriate for a new-grad search")
     gaps = []
@@ -1019,8 +1020,7 @@ def fallback_fit(profile: dict[str, Any], job: dict[str, Any]) -> dict[str, Any]
         gaps.append("No full description fetched yet, so this score is a title-level estimate")
     summary = (
         f"{job.get('title', 'This role')} at {job.get('company', 'the company')} looks like a "
-        f"{scored['fit_verdict'].lower()} based on title, location, and skill overlap. "
-        "Fetch the full posting and add Groq in Settings for a deeper evaluation."
+        f"{scored['fit_verdict'].lower()} based on title, location, and skill overlap."
     )
     return {
         "score": scored["fit_score"],
@@ -1028,9 +1028,9 @@ def fallback_fit(profile: dict[str, Any], job: dict[str, Any]) -> dict[str, Any]
         "summary": summary,
         "strengths": strengths,
         "gaps": gaps,
-        "keywords": matched[:8],
+        "keywords": matched[:8] or [s for s in (job.get("skills") or [])[:8]],
         "recommendation": "apply" if scored["fit_score"] >= 60 else "maybe",
-        "engine": "Heuristic (no AI key)",
+        "engine": "Heuristic",
     }
 
 
@@ -1043,6 +1043,11 @@ def generate_fit(
         )
         data = parse_json_response(text)
         data["engine"] = engine
+        # Ensure numeric score
+        try:
+            data["score"] = int(data.get("score", 0))
+        except Exception:
+            data["score"] = int(fallback_fit(profile, job).get("score", 0))
         return data
     except Exception as exc:
         result = fallback_fit(profile, job)
