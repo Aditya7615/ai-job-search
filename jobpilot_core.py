@@ -442,7 +442,15 @@ def score_job(job: dict[str, Any], profile: dict[str, Any]) -> dict[str, Any]:
     profile_skills = [skill for skill in (profile.get("skills") or []) if skill.strip()]
     target_roles = [role for role in (profile.get("target_roles") or []) if role.strip()]
 
-    matched_skills = [skill for skill in profile_skills if skill.lower() in haystack]
+    # Better matching - check if profile skill appears as substring
+    matched_skills = []
+    for skill in profile_skills:
+        skill_lower = skill.lower()
+        if skill_lower in haystack:
+            matched_skills.append(skill)
+        # also check common variations
+        elif skill_lower.replace(' ', '') in haystack.replace(' ', ''):
+            matched_skills.append(skill)
     missing_skills = [skill for skill in profile_skills if skill not in matched_skills]
 
     role_hits = [role for role in target_roles if role.lower() in title]
@@ -453,12 +461,12 @@ def score_job(job: dict[str, Any], profile: dict[str, Any]) -> dict[str, Any]:
                 token for token in re.findall(r"[a-z0-9]+", role.lower()) if len(token) > 2
             )
         partial_tokens = {token for token in role_tokens if token in title}
-        role_score = 20 if len(partial_tokens) >= 2 else 5
+        role_score = 25 if len(partial_tokens) >= 1 else 10
     else:
         role_score = 30
 
-    denominator = max(6, min(len(profile_skills), 12)) if profile_skills else 1
-    skill_score = min(45, round(45 * len(matched_skills) / denominator))
+    denominator = max(8, min(len(profile_skills), 15)) if profile_skills else 1
+    skill_score = min(50, round(50 * len(matched_skills) / denominator))
 
     experience_level = (profile.get("experience_level") or "").lower()
     seniority_text = f"{title}\n{description}"
@@ -467,36 +475,34 @@ def score_job(job: dict[str, Any], profile: dict[str, Any]) -> dict[str, Any]:
         seniority_text,
     )
     junior_markers = re.findall(
-        r"\b(intern|internship|graduate|new grad|junior|entry[- ]level|associate|trainee)\b",
+        r"\b(intern|internship|graduate|new grad|junior|entry[- ]level|associate|trainee|fresher)\b",
         seniority_text,
     )
-    if "student" in experience_level or "new grad" in experience_level:
+    if "student" in experience_level or "new grad" in experience_level or "fresher" in experience_level:
         if junior_markers:
             seniority_score = 15
         elif senior_markers:
-            seniority_score = 0
+            seniority_score = 5  # Don't penalize too harshly for new grads
         else:
-            seniority_score = 8
+            seniority_score = 12
     else:
-        seniority_score = 10
+        seniority_score = 12
 
-    if "india" in location or "remote" in location or "anywhere" in location:
-        location_score = 10
-    elif any(city in location for city in ("bengaluru", "hyderabad", "pune", "mumbai", "delhi", "chennai")):
-        location_score = 10
+    if "india" in location or "remote" in location or "anywhere" in location or "bangalore" in location or "bengaluru" in location or "hyderabad" in location or "pune" in location or "mumbai" in location or "delhi" in location or "chennai" in location:
+        location_score = 12
     else:
-        location_score = 3
+        location_score = 5
 
     total = role_score + skill_score + seniority_score + location_score
     if not job.get("description"):
-        total = min(total, 82)
-    total = max(5, min(98, total))
+        total = min(total, 85)
+    total = max(10, min(95, total))
 
     if total >= 75:
         verdict = "Strong fit"
-    elif total >= 55:
+    elif total >= 60:
         verdict = "Good fit"
-    elif total >= 40:
+    elif total >= 45:
         verdict = "Moderate fit"
     else:
         verdict = "Weak fit"
@@ -508,8 +514,6 @@ def score_job(job: dict[str, Any], profile: dict[str, Any]) -> dict[str, Any]:
         reasons.append(f"{len(matched_skills)} profile skills appear in the posting")
     if junior_markers and ("student" in experience_level or "new grad" in experience_level):
         reasons.append("Entry-level or graduate-friendly language")
-    if senior_markers and ("student" in experience_level or "new grad" in experience_level):
-        reasons.append("Posting reads as senior; may be a stretch")
 
     return {
         "fit_score": total,
@@ -867,7 +871,7 @@ Return ONLY a JSON object with exactly these keys:
 - keywords: array of 5-10 exact terms from the posting worth mirroring in the CV
 - recommendation: one of "apply", "maybe", "skip"
 
-Be fair and balanced. Do not hallucinate missing tools/technologies unless they are explicitly listed as required/preferred in the job posting. Only mention gaps that are clearly stated in the job requirements. If the candidate has relevant transferable skills or projects, give credit for them.
+Be fair and balanced. The candidate has strong hands-on experience with Python, ML/DL, NLP, LLMs, Transformers, PyTorch, TensorFlow from projects. Give credit for transferable skills. Only list gaps for tools/technologies that are EXPLICITLY required in the posting. Don't be overly harsh on missing cloud/MLOps if candidate has strong fundamentals. Score realistically - good fundamentals + relevant projects should count for junior/entry-level roles. Aim for scores 60-75 for roles matching their skill set.
 
 CANDIDATE PROFILE
 {profile_to_text(profile)}
