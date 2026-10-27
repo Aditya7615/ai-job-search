@@ -613,9 +613,9 @@ def page_find_jobs() -> None:
     )
     prereqs = core.cli_status()
     if not prereqs["bun"]:
-        st.error("Bun is not installed, so the job CLIs cannot run. Install it from https://bun.sh.")
+        st.warning("Bun runtime not detected locally. Job search CLIs may be limited in this environment.")
     if not prereqs["linkedin_cli"] or not prereqs["freehire_cli"]:
-        st.warning("One or more search CLIs are missing from .agents/skills.")
+        st.info("Some search CLIs may be unavailable. You can still browse cached jobs.")
 
     with st.form("search_form"):
         c1, c2 = st.columns([2, 1])
