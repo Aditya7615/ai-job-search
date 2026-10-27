@@ -1,1 +1,17 @@
-{"name": "", "email": "", "phone": "", "location": "", "headline": "", "summary": "", "target_roles": [], "target_locations": [], "experience_level": "Student / New grad", "work_modes": ["remote", "hybrid", "onsite"], "languages": ["English"], "skills": [], "education": "", "experience": "", "projects": "", "certifications": "", "links": {"linkedin": "", "github": "", "portfolio": ""}, "dealbreakers": "", "cv_text": "", "updated_at": ""}
+{"name": "Aditya Goyal", "email": "adityagoyal447@gmail.com", "phone": "+91 8905813391", "location": "Jaipur, India", "headline": "Data Scientist | NLP & LLM Engineer", "summary": "B.Tech CSE (Data Science) student at Manipal University Jaipur with a strong foundation in machine learning, deep learning, and data analysis. Built end-to-end projects including sign language translator, customer segmentation, ML toolkit, and deepfake detection. Comfortable with Python, TensorFlow, scikit-learn, SQL, and Power BI; seeking Data Scientist and NLP/LLM Engineer roles in India.", "target_roles": ["Data Scientist", "NLP Engineer", "LLM Engineer"], "target_locations": ["India", "Remote"], "experience_level": "Student / New grad", "work_modes": ["remote", "hybrid", "onsite"], "languages": ["English"], "skills": ["Python", "Machine Learning", "Deep Learning", "NLP", "LLMs", "Transformers", "PyTorch", "TensorFlow", "scikit-learn", "Pandas", "NumPy", "SQL", "Streamlit", "Git", "Data Visualization"], "education": "**Manipal University Jaipur** — B.Tech, Computer Science (Data Science), 2023–2027
+CGPA: 8.32/10", "experience": "", "projects": "### SignEase — Sign Language Translator
+*JavaScript, App Lab Data Service, Web Speech API* — [GitHub](https://github.com/Aditya7615/SIgnEase)
+- Built a real-time gesture-to-text translation framework using a CNN model.
+
+### Customer Segmentation Analysis for Credit Cards
+*Python, Pandas, scikit-learn, Power BI, MySQL* — [GitHub](https://github.com/Aditya7615/Credit-Card-Segmentation-Project)
+- Performed EDA and built K-Means clustering model with PCA.
+
+### Interactive Machine Learning Toolkit
+*Python, Streamlit, scikit-learn, Pandas, NumPy* — [GitHub](https://github.com/Aditya7615/Machine-Learning-Toolkit)
+- Built Streamlit app for training/testing ML algorithms.
+
+### Deepfake Detection Model — VISTA'25 Hackathon
+*Python, TensorFlow, Keras, OpenCV* — [Kaggle](https://www.kaggle.com/code/adityasik/deepfake-imagedetection)
+- Built CNN with EfficientNetB0, reached 96% validation accuracy.", "certifications": "- Top 10, VISTA'25 Computer Vision Hackathon
+- Dean's List", "links": {"linkedin": "https://www.linkedin.com/in/adityagoyal7615/", "github": "https://github.com/Aditya7615", "portfolio": "https://amazing-pixie-660bfc.netlify.app/"}, "dealbreakers": "", "cv_text": "", "updated_at": "2026-10-27T23:30:00"}
