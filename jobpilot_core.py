@@ -860,24 +860,12 @@ def _job_text(job: dict[str, Any], limit: int = 8000) -> str:
 
 
 def fit_prompt(profile: dict[str, Any], job: dict[str, Any]) -> str:
-    return f"""Evaluate this candidate's fit for the job below.
+    return f"""Evaluate fit. Return valid JSON only with keys: score (int), verdict (string), summary (string), strengths (array), gaps (array), keywords (array), recommendation (string).
 
-Return ONLY a JSON object with exactly these keys:
-- score: integer 0-100
-- verdict: one of "Strong fit", "Good fit", "Moderate fit", "Weak fit"
-- summary: 2 sentences
-- strengths: array of 2-4 short bullets grounded in the candidate profile
-- gaps: array of 1-4 short bullets (honest missing requirements)
-- keywords: array of 5-10 exact terms from the posting worth mirroring in the CV
-- recommendation: one of "apply", "maybe", "skip"
+Be concise. Candidate has Python, ML/DL, NLP, LLMs, Transformers, PyTorch, TensorFlow from projects. Only list gaps for tools explicitly required in posting. Score 55-75 for roles matching fundamentals.
 
-Be fair and balanced. The candidate has strong hands-on experience with Python, ML/DL, NLP, LLMs, Transformers, PyTorch, TensorFlow from projects. Give credit for transferable skills. Only list gaps for tools/technologies that are EXPLICITLY required in the posting. Don't be overly harsh on missing cloud/MLOps if candidate has strong fundamentals. Score realistically - good fundamentals + relevant projects should count for junior/entry-level roles. Aim for scores 60-75 for roles matching their skill set.
-
-CANDIDATE PROFILE
-{profile_to_text(profile)}
-
-JOB
-{_job_text(job)}
+CANDIDATE: {profile_to_text(profile)[:1500]}
+JOB: {_job_text(job)[:1500]}
 """
 
 
@@ -1043,7 +1031,7 @@ def generate_fit(
 ) -> dict[str, Any]:
     try:
         text, engine = generate_text(
-            settings, SYSTEM_PROMPT, fit_prompt(profile, job), json_mode=True, max_tokens=800
+            settings, "You output only valid JSON.", fit_prompt(profile, job), json_mode=True, max_tokens=600
         )
         data = parse_json_response(text)
         data["engine"] = engine
@@ -1052,6 +1040,10 @@ def generate_fit(
             data["score"] = int(data.get("score", 0))
         except Exception:
             data["score"] = int(fallback_fit(profile, job).get("score", 0))
+        if not data.get("verdict"):
+            data["verdict"] = fallback_fit(profile, job).get("verdict", "Moderate fit")
+        if not data.get("recommendation"):
+            data["recommendation"] = "maybe"
         return data
     except Exception as exc:
         result = fallback_fit(profile, job)
